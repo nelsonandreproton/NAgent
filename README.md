@@ -1,86 +1,86 @@
 # 🤖 Agent Orchestrator
 
-Um orquestrador inteligente de agentes que fornece resumos diários coordenando agentes do Gmail e Google Calendar usando Ollama LLM local (gemma2:2b) com suporte para notificações no Telegram.
+An intelligent agent orchestrator that provides daily summaries by coordinating Gmail and Google Calendar agents using local Ollama LLM (gemma2:2b) with Telegram notification support.
 
-## ✨ Funcionalidades
+## ✨ Features
 
-- 📧 **Agente Gmail**: Busca e resume emails não lidos com filtros inteligentes
-- 📅 **Agente Calendário**: Analisa reuniões diárias e identifica conflitos
-- 🤖 **Integração LLM**: Usa instância local do Ollama com modelo gemma2:2b
-- 📱 **Notificações Telegram**: Envia resumos diários diretamente para o seu Telegram
-- 🌍 **Multi-idioma**: Suporte para português (PT/BR), inglês, espanhol e outros
-- ⏰ **Agendamento Flexível**: Execução sob demanda ou automática diária
-- 📊 **Saídas Ricas**: Formatos JSON, texto ou HTML
-- 🎨 **Interface CLI**: Interface terminal rica com cores e tabelas
-- 🔧 **Configurável**: Sistema extenso de configuração YAML
+- 📧 **Gmail Agent**: Fetches and summarizes unread emails with intelligent filters
+- 📅 **Calendar Agent**: Analyzes daily meetings and identifies conflicts
+- 🤖 **LLM Integration**: Uses local Ollama instance with gemma2:2b model
+- 📱 **Telegram Notifications**: Sends daily summaries directly to your Telegram
+- 🌍 **Multi-language**: Support for Portuguese (PT/BR), English, Spanish and more
+- ⏰ **Flexible Scheduling**: On-demand or daily automated execution
+- 📊 **Rich Output**: JSON, text or HTML formats
+- 🎨 **CLI Interface**: Rich terminal interface with colors and tables
+- 🔧 **Configurable**: Extensive YAML-based configuration system
 
-## 🚀 Início Rápido
+## 🚀 Quick Start
 
-### 1. Pré-requisitos
+### 1. Prerequisites
 
 - Python 3.8+
-- [Ollama](https://ollama.ai/) instalado e em execução
-- Projeto Google Cloud Console com APIs Gmail e Calendar ativadas
-- (Opcional) Bot do Telegram configurado
+- [Ollama](https://ollama.ai/) installed and running
+- Google Cloud Console project with Gmail and Calendar APIs enabled
+- (Optional) Configured Telegram bot
 
-### 2. Instalação
+### 2. Installation
 
 ```bash
-# Clone ou descarregue o projeto
+# Clone or download the project
 cd NAgent
 
-# Instale as dependências
+# Install dependencies
 pip install -r requirements.txt
 
-# Instale e inicie o Ollama com modelo gemma2:2b
+# Install and start Ollama with gemma2:2b model
 ollama pull gemma2:2b
 ollama serve
 ```
 
-### 3. Configuração Google API
+### 3. Google API Setup
 
-1. Vá para [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um novo projeto ou selecione um existente
-3. Ative a Gmail API e Calendar API
-4. Crie credenciais OAuth 2.0 (Aplicação Desktop)
-5. Descarregue `credentials.json` e coloque na pasta `credentials/`
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Gmail API and Calendar API
+4. Create OAuth 2.0 credentials (Desktop Application)
+5. Download `credentials.json` and place in `credentials/` directory
 
-### 4. Configuração Telegram (Opcional)
+### 4. Telegram Bot Setup (Optional)
 
-1. Abra o Telegram e procure [@BotFather](https://t.me/BotFather)
-2. Envie `/newbot` e siga as instruções
-3. Guarde o token do bot (formato: `123456:ABC-DEF1234...`)
-4. Obtenha o seu Chat ID:
-   - Envie mensagem para [@userinfobot](https://t.me/userinfobot) 
-   - Copie o seu ID numérico (ex: `123456789`)
-5. Teste o bot enviando-lhe uma mensagem primeiro
+1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
+2. Send `/newbot` command and follow instructions
+3. Save the bot token (format: `123456:ABC-DEF1234...`)
+4. Get your Chat ID:
+   - Send a message to [@userinfobot](https://t.me/userinfobot) 
+   - Copy your numeric ID (e.g., `123456789`)
+5. Test the bot by sending it a message first
 
-### 5. Configuração
+### 5. Configuration
 
 ```bash
-# Copie o template de ambiente
+# Copy environment template
 cp .env.template .env
 
-# Edite as configurações
+# Edit settings
 vim .env
 ```
 
-### 6. Primeiro Teste
+### 6. First Test
 
 ```bash
-# Verifique o estado do sistema
+# Check system status
 python main.py --status
 
-# Gere um resumo imediatamente
+# Generate summary immediately
 python main.py --run-now
 
-# Inicie o modo agendado
+# Start scheduled mode
 python main.py --schedule
 ```
 
-## ⚙️ Configuração
+## ⚙️ Configuration
 
-### Variáveis de Ambiente (.env)
+### Environment Variables (.env)
 
 ```bash
 # Google API
@@ -90,174 +90,174 @@ GOOGLE_CREDENTIALS_PATH=credentials/credentials.json
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=gemma2:2b
 
-# Telegram (Opcional)
+# Telegram (Optional)
 TELEGRAM_ENABLED=true
 TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
 TELEGRAM_CHAT_ID=123456789
 
-# Agendamento
+# Scheduling
 DAILY_SUMMARY_TIME=09:00
 TIMEZONE=UTC
 
-# Saída
+# Output
 OUTPUT_FORMAT=json
 SUMMARY_LENGTH=medium
 ```
 
-### Configuração Principal (config/config.yaml)
+### Main Configuration (config/config.yaml)
 
-O sistema usa um arquivo de configuração YAML com secções para:
+The system uses a comprehensive YAML configuration file with sections for:
 
-- **Schedule**: Horários de resumos automáticos
-- **Language**: Configuração de idioma (pt-pt, pt-br, en, es, fr, de, it)
-- **Ollama**: Configurações do modelo LLM
-- **Google API**: Autenticação e configuração de âmbitos
-- **Gmail**: Filtros de email e opções de processamento
-- **Calendar**: Seleção de eventos e categorização
-- **Telegram**: Configuração de notificações
-- **Summary**: Formato de saída e níveis de detalhe
-- **Logging**: Níveis de log e saída de arquivo
+- **Schedule**: Automated summary timing
+- **Language**: Language configuration (pt-pt, pt-br, en, es, fr, de, it)
+- **Ollama**: LLM model and generation settings
+- **Google API**: Authentication and scope configuration
+- **Gmail**: Email filtering and processing options
+- **Calendar**: Event selection and categorization
+- **Telegram**: Notification configuration
+- **Summary**: Output format and detail levels
+- **Logging**: Log levels and file output
 
-#### Configuração de Idioma
+#### Language Configuration
 
 ```yaml
 language:
-  # Idioma padrão para resumos (pt-pt, pt-br, en, es, fr, de, it)
-  default: "pt-pt"
-  # Formato de data para o idioma selecionado
-  date_format: "%d/%m/%Y"
-  # Formato de hora para o idioma selecionado  
+  # Default language for summaries (pt-pt, pt-br, en, es, fr, de, it)
+  default: "en"
+  # Date format for the selected language
+  date_format: "%Y-%m-%d"
+  # Time format for the selected language  
   time_format: "%H:%M"
 ```
 
-#### Configuração Telegram
+#### Telegram Configuration
 
 ```yaml
 telegram:
-  # Enviar resumo diário automaticamente
+  # Send daily summary automatically
   send_daily_summary: true
-  # Enviar notificações de erro
+  # Send error notifications
   send_error_notifications: true
-  # Enviar atualizações de estado do sistema
+  # Send system status updates
   send_status_updates: false
-  # Formato da mensagem (html, markdown, text)
+  # Message format (html, markdown, text)
   message_format: "html"
 ```
 
-## 📱 Usar com Telegram
+## 📱 Using with Telegram
 
-### Configuração Rápida
+### Quick Setup
 
-1. **Criar Bot**: Fale com @BotFather → `/newbot`
-2. **Obter Chat ID**: Fale com @userinfobot
-3. **Configurar .env**:
+1. **Create Bot**: Talk to @BotFather → `/newbot`
+2. **Get Chat ID**: Talk to @userinfobot
+3. **Configure .env**:
    ```bash
    TELEGRAM_ENABLED=true
-   TELEGRAM_BOT_TOKEN=seu_token_aqui
-   TELEGRAM_CHAT_ID=seu_chat_id_aqui
+   TELEGRAM_BOT_TOKEN=your_token_here
+   TELEGRAM_CHAT_ID=your_chat_id_here
    ```
-4. **Testar**: `python main.py --run-now`
+4. **Test**: `python main.py --run-now`
 
-### Tipos de Notificações
+### Notification Types
 
-- 📋 **Resumos Diários**: Emails e reuniões formatados
-- ⚠️ **Notificações de Erro**: Quando algo falha
-- 🔍 **Estado do Sistema**: Verificações de conectividade
-- ⏰ **Execuções Agendadas**: Início/fim de tarefas automáticas
+- 📋 **Daily Summaries**: Formatted emails and meetings
+- ⚠️ **Error Notifications**: When something fails
+- 🔍 **System Status**: Connectivity checks
+- ⏰ **Scheduled Runs**: Start/finish of automated tasks
 
-### Exemplo de Mensagem Telegram
+### Example Telegram Message
 
 ```
-🤖 Resumo Diário - Agent Orchestrator
-📅 15/01/2024
+🤖 Daily Summary - Agent Orchestrator
+📅 2024-01-15
 
-📧 Emails não lidos: 12
-📩 Recentes (3h): 3
+📧 Unread emails: 12
+📩 Recent (3h): 3
 
-📅 Reuniões hoje: 4
-💻 Virtuais: 2
-⏰ Duração total: 3.5h
+📅 Meetings today: 4
+💻 Virtual: 2
+⏰ Total duration: 3.5h
 
-📋 Resumo do Dia:
-[Resumo inteligente gerado pelo LLM]
+📋 Daily Briefing:
+[Intelligent summary generated by LLM]
 
-Gerado às 09:00
+Generated at 09:00
 ```
 
-## 🌍 Suporte Multi-idioma
+## 🌍 Multi-language Support
 
-### Idiomas Disponíveis
+### Available Languages
 
-- **pt-pt**: Português de Portugal (padrão)
-- **pt-br**: Português do Brasil
-- **en**: Inglês
-- **es**: Espanhol
-- **fr**: Francês
-- **de**: Alemão
-- **it**: Italiano
+- **pt-pt**: Portuguese (Portugal) (default)
+- **pt-br**: Portuguese (Brazil)
+- **en**: English
+- **es**: Spanish
+- **fr**: French
+- **de**: German
+- **it**: Italian
 
-### Como Alterar o Idioma
+### How to Change Language
 
-Edite `config/config.yaml`:
+Edit `config/config.yaml`:
 ```yaml
 language:
-  default: "en"  # Para inglês
+  default: "en"  # For English
 ```
 
-O idioma afeta:
-- Mensagens do Telegram
-- Formatos de data/hora
-- Notificações do sistema
-- Interface CLI
+Language affects:
+- Telegram messages
+- Date/time formats
+- System notifications
+- CLI interface
 
-## 💻 Exemplos de Uso
+## 💻 Usage Examples
 
-### Interface de Linha de Comando
+### Command Line Interface
 
 ```bash
-# Verificação de estado do sistema
+# System status check
 python main.py --status
 
-# Geração imediata de resumo
+# Immediate summary generation
 python main.py --run-now
 
-# Modo agendado (executa diariamente na hora configurada)
+# Scheduled mode (runs daily at configured time)
 python main.py --schedule
 
-# Modo debug com logging verboso
+# Debug mode with verbose logging
 python main.py --run-now --debug
 
-# Usar arquivo de configuração personalizado
-python main.py --config minha-config.yaml --run-now
+# Use custom configuration file
+python main.py --config my-config.yaml --run-now
 ```
 
-### Uso Programático
+### Programmatic Usage
 
 ```python
 from main import AgentOrchestrator
 
-# Inicializar orquestrador
+# Initialize orchestrator
 orchestrator = AgentOrchestrator("config/config.yaml")
 
-# Verificar estado do sistema
+# Check system status
 status = orchestrator.check_system_status()
 
-# Gerar resumo diário
+# Generate daily summary
 summary = orchestrator.generate_daily_summary()
 
-# Exibir no terminal
+# Display in terminal
 orchestrator.display_summary(summary)
 ```
 
-## 📊 Formatos de Saída
+## 📊 Output Formats
 
-### Formato JSON
+### JSON Format
 ```json
 {
   "timestamp": "2024-01-15T09:00:00",
-  "email_summary": "Tem 12 emails não lidos...",
-  "calendar_summary": "Tem 4 reuniões hoje...",
-  "unified_summary": "Resumo Diário: Aqui está o seu dia...",
+  "email_summary": "You have 12 unread emails...",
+  "calendar_summary": "You have 4 meetings today...",
+  "unified_summary": "Daily Briefing: Here's your day at a glance...",
   "statistics": {
     "email": {"total_unread": 12, "recent_count": 3},
     "calendar": {"total_events": 4, "virtual_meetings": 2}
@@ -265,64 +265,64 @@ orchestrator.display_summary(summary)
 }
 ```
 
-### Formato Texto
-Resumo unificado em texto simples, perfeito para notificações.
+### Text Format
+Unified summary in plain text, perfect for notifications.
 
-### Formato HTML  
-Saída HTML rica com estilos, perfeita para relatórios de email ou dashboards web.
+### HTML Format  
+Rich HTML output with styling, perfect for email reports or web dashboards.
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
 ```
 Agent Orchestrator
-├── main.py                    # Orquestrador principal e CLI
+├── main.py                    # Main orchestrator and CLI
 ├── services/
-│   ├── google_auth.py         # Gestão OAuth 2.0 Google
-│   ├── llm_service.py         # Cliente Ollama LLM
-│   ├── telegram_service.py    # Integração bot Telegram
-│   └── translations.py       # Serviço de traduções
+│   ├── google_auth.py         # Google OAuth 2.0 management
+│   ├── llm_service.py         # Ollama LLM client
+│   ├── telegram_service.py    # Telegram bot integration
+│   └── translations.py       # Translation service
 ├── agents/
-│   ├── gmail_agent.py         # Integração Gmail API
-│   └── calendar_agent.py      # Integração Calendar API
+│   ├── gmail_agent.py         # Gmail API integration
+│   └── calendar_agent.py      # Calendar API integration
 ├── config/
-│   └── config.yaml           # Configuração principal
-├── credentials/              # Credenciais Google API
-├── summaries/               # Arquivos de resumos gerados
-└── logs/                    # Logs da aplicação
+│   └── config.yaml           # Main configuration
+├── credentials/              # Google API credentials
+├── summaries/               # Generated summary files
+└── logs/                    # Application logs
 ```
 
-### Detalhes dos Componentes
+### Component Details
 
-#### Agente Gmail
-- Busca emails não lidos com filtros configuráveis
-- Extrai remetente, assunto e preview de conteúdo
-- Agrupa emails por remetente e tópico
-- Identifica emails urgentes/importantes
-- Fornece resumos de recurso se LLM não disponível
+#### Gmail Agent
+- Fetches unread emails with configurable filters
+- Extracts sender, subject and content preview
+- Groups emails by sender and topic
+- Identifies urgent/important emails
+- Provides fallback summaries if LLM unavailable
 
-#### Agente Calendário  
-- Obtém eventos do calendário de hoje
-- Categoriza reuniões (virtual, presencial, tipos)
-- Calcula duração e identifica conflitos
-- Extrai informações de participantes e local
-- Fornece sugestões de optimização de agenda
+#### Calendar Agent  
+- Retrieves today's calendar events
+- Categorizes meetings (virtual, in-person, types)
+- Calculates duration and identifies conflicts
+- Extracts attendee and location information
+- Provides schedule optimization suggestions
 
-#### Serviço Ollama
-- Liga à instância local do Ollama
-- Suporta prompts e templates personalizados
-- Gere configuração de temperatura e tokens
-- Fornece tratamento de erros e recursos
-- Optimizado para modelo gemma2:2b
+#### Ollama Service
+- Connects to local Ollama instance
+- Supports custom prompts and templates
+- Manages temperature and token configuration
+- Provides error handling and fallbacks
+- Optimized for gemma2:2b model
 
-#### Gestor de Autenticação
-- Gere fluxo OAuth 2.0 automaticamente
-- Gere atualização e armazenamento de tokens
-- Fornece utilitários de teste de ligação
-- Suporta revogação de credenciais
+#### Authentication Manager
+- Handles OAuth 2.0 flow automatically
+- Manages token refresh and storage
+- Provides connection testing utilities
+- Supports credential revocation
 
-## 🔧 Configurações Avançadas
+## 🔧 Advanced Settings
 
-### Filtros de Email
+### Email Filtering
 ```yaml
 gmail:
   labels: ["IMPORTANT", "CATEGORY_PERSONAL"]
@@ -330,7 +330,7 @@ gmail:
   max_age_hours: 24
 ```
 
-### Personalização Calendário
+### Calendar Customization
 ```yaml
 calendar:
   include_all_day: true
@@ -338,7 +338,7 @@ calendar:
   days_ahead: 1
 ```
 
-### Personalização LLM
+### LLM Customization
 ```yaml
 ollama:
   temperature: 0.7
@@ -346,127 +346,127 @@ ollama:
   timeout: 30
 ```
 
-### Execução Agendada
+### Scheduled Execution
 ```yaml
 schedule:
   enabled: true
   daily_time: "08:30"
-  timezone: "Europe/Lisbon"
+  timezone: "America/New_York"
 ```
 
-## 🔍 Resolução de Problemas
+## 🔍 Troubleshooting
 
-### Problemas Comuns
+### Common Issues
 
-**Falha de Ligação Ollama**
+**Ollama Connection Failed**
 ```bash
-# Verificar se Ollama está em execução
+# Check if Ollama is running
 curl http://localhost:11434/api/tags
 
-# Iniciar Ollama se necessário
+# Start Ollama if needed
 ollama serve
 
-# Instalar modelo se em falta
+# Pull model if missing
 ollama pull gemma2:2b
 ```
 
-**Erros de Autenticação Google**
+**Google Authentication Errors**
 ```bash
-# Verificar se arquivo de credenciais existe
+# Check if credentials file exists
 ls -la credentials/credentials.json
 
-# Remover tokens em cache para re-autenticar
+# Remove cached tokens to re-authenticate
 rm credentials/token.json
 
-# Verificar quotas de API no Google Cloud Console
+# Check API quotas in Google Cloud Console
 ```
 
-**Problemas Telegram**
+**Telegram Issues**
 ```bash
-# Verificar se bot token e chat ID estão corretos
-# Certificar-se de que enviou mensagem para o bot primeiro
-# Testar ligação manual:
-curl -X POST "https://api.telegram.org/botSEU_TOKEN/sendMessage" \
+# Check if bot token and chat ID are correct
+# Make sure you sent a message to the bot first
+# Test manual connection:
+curl -X POST "https://api.telegram.org/botYOUR_TOKEN/sendMessage" \
      -H "Content-Type: application/json" \
-     -d '{"chat_id": "SEU_CHAT_ID", "text": "teste"}'
+     -d '{"chat_id": "YOUR_CHAT_ID", "text": "test"}'
 ```
 
-**Erros de Permissão**
+**Permission Errors**
 ```bash
-# Certificar-se de que main.py é executável
+# Make sure main.py is executable
 chmod +x main.py
 
-# Verificar permissões de pasta
+# Check directory permissions
 chmod 755 credentials/ config/ logs/
 ```
 
-### Modo Debug
+### Debug Mode
 
-Ativar logging abrangente:
+Enable comprehensive logging:
 ```bash
 python main.py --run-now --debug
 ```
 
-Isto fornece informações detalhadas sobre:
-- Chamadas e respostas de API
-- Fluxo de autenticação
-- Processo de geração LLM
-- Stack traces de erros
+This provides detailed information about:
+- API calls and responses
+- Authentication flow
+- LLM generation process
+- Error stack traces
 
-### Verificação Estado Sistema
+### System Status Check
 
-Comece sempre a resolução de problemas com:
+Always start troubleshooting with:
 ```bash
 python main.py --status
 ```
 
-Isto verifica:
-- ✅ Disponibilidade Ollama e acesso a modelo
-- ✅ Estado de autenticação Google API
-- ✅ Conectividade Gmail e Calendar API
-- ✅ Ligação Telegram Bot
-- ✅ Validade da configuração
+This verifies:
+- ✅ Ollama availability and model access
+- ✅ Google API authentication status
+- ✅ Gmail and Calendar API connectivity
+- ✅ Telegram Bot connection
+- ✅ Configuration validity
 
-## 🔐 Notas de Segurança
+## 🔐 Security Notes
 
-- Credenciais são armazenadas localmente e nunca transmitidas
-- Tokens OAuth são encriptados e auto-renovados
-- Chamadas API usam bibliotecas cliente oficial Google
-- Processamento LLM acontece inteiramente local (via Ollama)
-- Dados sensíveis são excluídos dos logs
-- Nunca commita ficheiros .env ou credentials para repositórios públicos
+- Credentials are stored locally and never transmitted
+- OAuth tokens are encrypted and auto-refreshed
+- API calls use official Google client libraries
+- LLM processing happens entirely locally (via Ollama)
+- Sensitive data is excluded from logs
+- Never commit .env files or credentials to public repositories
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-1. Faça fork do repositório
-2. Crie um branch de funcionalidade
-3. Faça as suas alterações
-4. Adicione testes se aplicável  
-5. Atualize a documentação
-6. Submeta um pull request
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable  
+5. Update documentation
+6. Submit a pull request
 
-## 📄 Licença
+## 📄 License
 
-Licença MIT - veja arquivo LICENSE para detalhes.
+MIT License - see LICENSE file for details.
 
-## 🆘 Suporte
+## 🆘 Support
 
-Para questões e problemas:
-1. Verifique a secção de resolução de problemas acima
-2. Reveja logs em `logs/orchestrator.log`
-3. Execute verificação de estado do sistema
-4. Consulte `TELEGRAM_SETUP_PT.md` para configuração Telegram
-5. Crie uma issue com detalhes do sistema e logs
+For issues and questions:
+1. Check the troubleshooting section above
+2. Review logs in `logs/orchestrator.log`
+3. Run system status check
+4. Consult `TELEGRAM_SETUP_EN.md` for Telegram configuration
+5. Create an issue with system details and logs
 
 ## 📈 Roadmap
 
-- [ ] Suporte para múltiplos calendários
-- [ ] Integração com mais LLMs (OpenAI, Claude, etc.)
-- [ ] Interface web dashboard
-- [ ] Plugins para outros serviços (Slack, Discord, etc.)
-- [ ] Análise de sentimento de emails
-- [ ] Sugestões inteligentes de resposta
+- [ ] Support for multiple calendars
+- [ ] Integration with more LLMs (OpenAI, Claude, etc.)
+- [ ] Web dashboard interface
+- [ ] Plugins for other services (Slack, Discord, etc.)
+- [ ] Email sentiment analysis
+- [ ] Intelligent response suggestions
 
 ---
 
-**Agent Orchestrator** - Simplifique a sua rotina diária com inteligência artificial! 🚀
+**Agent Orchestrator** - Simplify your daily routine with artificial intelligence! 🚀
