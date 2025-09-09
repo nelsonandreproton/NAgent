@@ -1,0 +1,119 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Credentials and tokens
+credentials/
+token.json
+*.json
+!config.yaml
+
+# Logs
+*.log
+logs/
+orchestrator.log
+
+# Generated summaries
+summaries/
+*.html
+*.txt
+!README*.md
+!*.template
+!TELEGRAM_SETUP_*.md
+
+# Cache files
+.cache/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+test_*.py
+*_test.py
+
+# Database
+*.db
+*.sqlite3
+*.sqlite
+
+# Backup files
+*.bak
+*.backup
+*~
+*.orig
+
+# Lock files
+*.lock
+poetry.lock
+Pipfile.lock
+
+# Node modules (if any)
+node_modules/
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+
+# Local configuration overrides
+config.local.yaml
+config.dev.yaml
+
+# Telegram bot credentials (extra safety)
+telegram_bot_token.txt
+chat_id.txt
