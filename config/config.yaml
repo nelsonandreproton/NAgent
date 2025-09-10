@@ -1,23 +1,34 @@
-# Agent Orchestrator Configuration
+# NAgent Bot Configuration
 
-# Scheduling Configuration
-schedule:
-  # Enable daily automatic summaries
-  enabled: true
-  # Time to run daily summaries (24-hour format)
+# Bot Mode Configuration
+bot:
+  # Primary mode: telegram or cli
+  mode: "telegram"
+  # Enable automatic daily summaries
+  auto_daily_summary: false
+  # Daily summary time (if enabled)
   daily_time: "09:00"
-  # Timezone for scheduling
-  timezone: "UTC"
 
-# Ollama Configuration
-ollama:
-  base_url: "http://localhost:11434"
-  model: "gemma2:2b"
-  timeout: 30
-  # Temperature for text generation (0.0 to 1.0)
-  temperature: 0.7
-  # Maximum tokens to generate
-  max_tokens: 1000
+# Hugging Face Inference API Configuration
+llm:
+  # Model settings
+  model_name: "google/gemma-2-2b-it"  # Instruction-tuned version
+  
+  # Inference API settings
+  api:
+    timeout: 30  # API request timeout in seconds
+    max_retries: 3  # Number of retries on failure
+    retry_delay: 1  # Delay between retries in seconds
+    
+  # Generation parameters
+  generation:
+    max_new_tokens: 1024
+    temperature: 0.7
+    top_p: 0.9
+    top_k: 50
+    repetition_penalty: 1.1
+    do_sample: true
+    # Note: Inference API handles these parameters automatically
 
 # Google API Configuration
 google_api:
@@ -26,61 +37,20 @@ google_api:
     - "https://www.googleapis.com/auth/gmail.readonly"
     - "https://www.googleapis.com/auth/calendar.readonly"
 
-# Gmail Agent Configuration
-gmail:
-  user_id: "me"
-  max_results: 50
-  # Include emails from specific labels (optional)
-  labels: []
-  # Exclude emails from specific senders (optional)
-  exclude_senders: []
-  # Only process emails newer than X hours
-  max_age_hours: 24
-
-# Calendar Agent Configuration
-calendar:
-  calendar_id: "primary"
-  # How many days ahead to look for events
-  days_ahead: 1
-  # Include all-day events
-  include_all_day: true
-  # Minimum duration in minutes to include events
-  min_duration_minutes: 5
-
-# Summary Configuration
-summary:
-  # Output format: json, text, html
-  output_format: "json"
-  # Summary detail level: brief, medium, detailed
-  detail_level: "medium"
-  # Include email content preview
-  include_email_preview: true
-  # Maximum preview length
-  preview_max_length: 200
-  # Save summaries to file
-  save_to_file: true
-  output_directory: "summaries"
-
-# Language Configuration
-language:
-  # Default language for summaries and notifications
-  # Supported: pt-pt, pt-br, en, es, fr, de, it
-  default: "pt-pt"
-  # Date format for the selected language
-  date_format: "%d/%m/%Y"
-  # Time format for the selected language
-  time_format: "%H:%M"
-
-# Telegram Configuration
-telegram:
-  # Send daily summary automatically
-  send_daily_summary: true
-  # Send error notifications
-  send_error_notifications: true
-  # Send system status updates
-  send_status_updates: false
-  # Message format (html, markdown, text)
-  message_format: "html"
+# Agent Configuration
+agents:
+  gmail:
+    max_results: 20
+    max_age_hours: 24
+  calendar:
+    max_results: 20
+    
+# Response Configuration
+response:
+  # Max message length for Telegram (characters)
+  max_message_length: 4000
+  # Truncate long responses
+  truncate_long_responses: true
 
 # Logging Configuration
 logging:

@@ -1,472 +1,358 @@
-# 🤖 Agent Orchestrator
+# 🤖 NAgent - Intelligent Personal Assistant Bot
 
-An intelligent agent orchestrator that provides daily summaries by coordinating Gmail and Google Calendar agents using local Ollama LLM (gemma2:2b) with Telegram notification support.
+NAgent is an intelligent personal assistant bot that helps you manage your emails and calendar through natural language conversations. It uses Hugging Face's Inference API with gemma-2-2b-it for advanced AI processing with zero setup and no local model downloads.
 
-## ✨ Features
+## ✨ Key Features
 
-- 📧 **Gmail Agent**: Fetches and summarizes unread emails with intelligent filters
-- 📅 **Calendar Agent**: Analyzes daily meetings and identifies conflicts
-- 🤖 **LLM Integration**: Uses local Ollama instance with gemma2:2b model
-- 📱 **Telegram Notifications**: Sends daily summaries directly to your Telegram
-- 🌍 **Multi-language**: Support for Portuguese (PT/BR), English, Spanish and more
-- ⏰ **Flexible Scheduling**: On-demand or daily automated execution
-- 📊 **Rich Output**: JSON, text or HTML formats
-- 🎨 **CLI Interface**: Rich terminal interface with colors and tables
-- 🔧 **Configurable**: Extensive YAML-based configuration system
+- **Smart Request Routing**: Automatically detects if you're asking about emails, calendar, or general questions
+- **Multi-language Support**: Responds naturally in the same language you use 
+- **Telegram Bot Interface**: Chat with your assistant through Telegram
+- **Gmail Integration**: Check, analyze and summarize unread emails
+- **Calendar Integration**: Review today's meetings and schedule
+- **Cloud AI Processing**: Uses Hugging Face Inference API with gemma-2-2b-it for instant responses
+- **Development Testing**: Simple command-line interface for testing
+
+## 🏗️ Architecture
+
+```
+User (Telegram/CLI) 
+    ↓
+NAgent Bot (request routing)
+    ↓
+┌─────────────┬─────────────────┬─────────────┐
+│ Gmail Agent │ Calendar Agent  │ General LLM │
+└─────────────┴─────────────────┴─────────────┘
+    ↓
+Hugging Face Inference API (gemma-2-2b-it)
+```
+
+The bot intelligently analyzes your request and:
+- **EMAIL**: Routes to Gmail Agent for email-related questions
+- **CALENDAR**: Routes to Calendar Agent for meeting/schedule questions  
+- **GENERAL**: Handles directly for greetings, general questions, or capabilities
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
 
 - Python 3.8+
-- [Ollama](https://ollama.ai/) installed and running
-- Google Cloud Console project with Gmail and Calendar APIs enabled
-- (Optional) Configured Telegram bot
+- Hugging Face account and token (free)
+- Google API credentials (for Gmail/Calendar access)
+- Telegram bot token (for Telegram interface)
 
-### 2. Installation
+### 2. Install Dependencies
 
 ```bash
-# Clone or download the project
-cd NAgent
-
-# Install dependencies
+# Install dependencies (much lighter now!)
 pip install -r requirements.txt
 
-# Install and start Ollama with gemma2:2b model
-ollama pull gemma2:2b
-ollama serve
+# Verify installation
+python -c "from huggingface_hub import InferenceClient; print('✅ Hugging Face Hub ready')"
 ```
 
-### 3. Google API Setup
+### 3. Get Hugging Face Token
+
+```bash
+# 1. Go to https://huggingface.co/settings/tokens
+# 2. Create a new token (read access is sufficient)
+# 3. Copy your token (starts with hf_...)
+```
+
+**Note**: Without this token, you'll see authentication errors. The token is required for cloud AI processing.
+
+### 4. Configure Environment
+
+Create `.env` file:
+```bash
+# Hugging Face Token (required for AI processing)
+HUGGINGFACE_TOKEN=hf_your_token_here
+
+# Telegram Bot Configuration (required for Telegram interface)
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
+
+# Google API Credentials Path
+GOOGLE_CREDENTIALS_PATH=credentials/credentials.json
+```
+
+### 5. Configure API Settings (Optional)
+
+Edit `config/config.yaml` for advanced configuration:
+
+```yaml
+llm:
+  model_name: "google/gemma-2-2b-it"
+  
+  # API settings
+  api:
+    timeout: 30
+    max_retries: 3
+    retry_delay: 1
+  
+  # Generation settings
+  generation:
+    max_new_tokens: 1024
+    temperature: 0.7
+    top_p: 0.9
+```
+
+### 6. Test the Bot
+
+Test without Telegram (for development):
+```bash
+# Test general questions
+python test.py "hello, how are you?"
+
+# Test email questions  
+python test.py "do I have any unread emails?"
+
+# Test calendar questions
+python test.py "what meetings do I have today?"
+
+# Generate daily summary
+python test.py summary
+```
+
+### 7. Run Telegram Bot
+
+```bash
+# Starts instantly - no model loading required!
+python bot.py
+```
+
+## ⚙️ Configuration Options
+
+### API Configuration
+
+**Default setup (recommended):**
+```yaml
+llm:
+  model_name: "google/gemma-2-2b-it"
+  api:
+    timeout: 30
+    max_retries: 3
+```
+
+**High-throughput setup:**
+```yaml
+llm:
+  model_name: "google/gemma-2-2b-it"
+  api:
+    timeout: 60      # Longer timeout for complex requests
+    max_retries: 5   # More retries for reliability
+    retry_delay: 2   # Longer delay between retries
+```
+
+**Fast response setup:**
+```yaml
+llm:
+  model_name: "google/gemma-2-2b-it"
+  api:
+    timeout: 15      # Shorter timeout for quick responses
+    max_retries: 1   # Fewer retries for speed
+  generation:
+    max_new_tokens: 512  # Shorter responses
+    temperature: 0.5     # More deterministic
+```
+
+## 💬 Usage Examples
+
+### Email Questions
+- "Do I have any unread emails?"
+- "What emails did I receive today?"
+- "Show me the most important emails"
+- "Any urgent messages?"
+
+### Calendar Questions  
+- "What meetings do I have today?"
+- "What's my schedule like?"
+- "Do I have any conflicts today?"
+- "What's next on my calendar?"
+
+### General Questions
+- "Hello!" 
+- "What can you help me with?"
+- "How are you?"
+- "What are your capabilities?"
+
+### Multi-language Support
+The bot automatically detects and responds in your language:
+- "Tenho emails por ler?" (Portuguese)
+- "¿Tengo reuniones hoy?" (Spanish)  
+- "Ai-je des réunions aujourd'hui ?" (French)
+
+## 🔧 Configuration
+
+Edit `config/config.yaml` to customize:
+
+```yaml
+# NAgent Bot Configuration
+bot:
+  mode: "telegram"          # telegram or cli
+  auto_daily_summary: false
+
+# Hugging Face LLM Configuration
+llm:
+  model_name: "google/gemma-2-2b-it"
+  device: "auto"           # auto, cpu, cuda, mps
+  cache_dir: "models/"
+  
+# Agent Configuration
+agents:
+  gmail:
+    max_results: 20
+    max_age_hours: 24
+  calendar:
+    max_results: 20
+```
+
+## 📁 Project Structure
+
+```
+NAgent/
+├── bot.py                 # Main bot orchestrator
+├── test.py               # CLI testing interface
+├── config/
+│   ├── config.yaml       # Configuration file
+│   └── settings.py       # Settings loader
+├── services/
+│   ├── llm_service.py    # Hugging Face Inference API integration & request routing
+│   └── telegram_service.py # Telegram bot integration
+├── agents/
+│   ├── gmail_agent.py    # Gmail API integration
+│   └── calendar_agent.py # Calendar API integration
+└── credentials/          # Google API credentials
+```
+
+## 🤖 How It Works
+
+1. **Request Reception**: User sends message via Telegram or CLI
+2. **Language Detection**: LLM detects the user's language automatically
+3. **Intent Classification**: LLM categorizes request (EMAIL/CALENDAR/GENERAL)
+4. **Agent Routing**: Request routed to appropriate agent
+5. **Data Retrieval**: Agent fetches relevant data (emails/events)
+6. **LLM Analysis**: LLM analyzes data and generates natural response
+7. **Response Delivery**: Answer sent back in user's original language
+
+## 🔐 Google API Setup
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
 3. Enable Gmail API and Calendar API
-4. Create OAuth 2.0 credentials (Desktop Application)
-5. Download `credentials.json` and place in `credentials/` directory
+4. Create credentials (OAuth 2.0 Client ID)
+5. Download credentials.json to `credentials/` folder
+6. First run will open browser for authentication
 
-### 4. Telegram Bot Setup (Optional)
+## 📱 Telegram Bot Setup
 
-1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` command and follow instructions
-3. Save the bot token (format: `123456:ABC-DEF1234...`)
-4. Get your Chat ID:
-   - Send a message to [@userinfobot](https://t.me/userinfobot) 
-   - Copy your numeric ID (e.g., `123456789`)
-5. Test the bot by sending it a message first
+1. Message [@BotFather](https://t.me/botfather) on Telegram
+2. Create new bot with `/newbot`
+3. Get your bot token
+4. Add token to `.env` file
+5. Get your chat ID (message the bot, check logs, or use [@userinfobot](https://t.me/userinfobot))
 
-### 5. Configuration
+## 🛠️ Development
 
-```bash
-# Copy environment template
-cp .env.template .env
-
-# Edit settings
-vim .env
-```
-
-### 6. First Test
+### Testing Different Components
 
 ```bash
-# Check system status
-python main.py --status
+# Test LLM routing
+python -c "
+from services.llm_service import OllamaService
+llm = OllamaService()
+response = llm.route_user_request('do I have emails?')
+print(response.content)
+"
 
-# Generate summary immediately
-python main.py --run-now
-
-# Start scheduled mode
-python main.py --schedule
+# Test Gmail agent
+python -c "
+import asyncio
+from agents.gmail_agent import GmailAgent
+agent = GmailAgent()
+result = asyncio.run(agent.get_unread_emails())
+print(f'Found {result[\"count\"]} emails')
+"
 ```
 
-## ⚙️ Configuration
+### Adding New Languages
 
-### Environment Variables (.env)
-
-```bash
-# Google API
-GOOGLE_CREDENTIALS_PATH=credentials/credentials.json
-
-# Ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=gemma2:2b
-
-# Telegram (Optional)
-TELEGRAM_ENABLED=true
-TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-TELEGRAM_CHAT_ID=123456789
-
-# Scheduling
-DAILY_SUMMARY_TIME=09:00
-TIMEZONE=UTC
-
-# Output
-OUTPUT_FORMAT=json
-SUMMARY_LENGTH=medium
-```
-
-### Main Configuration (config/config.yaml)
-
-The system uses a comprehensive YAML configuration file with sections for:
-
-- **Schedule**: Automated summary timing
-- **Language**: Language configuration (pt-pt, pt-br, en, es, fr, de, it)
-- **Ollama**: LLM model and generation settings
-- **Google API**: Authentication and scope configuration
-- **Gmail**: Email filtering and processing options
-- **Calendar**: Event selection and categorization
-- **Telegram**: Notification configuration
-- **Summary**: Output format and detail levels
-- **Logging**: Log levels and file output
-
-#### Language Configuration
-
-```yaml
-language:
-  # Default language for summaries (pt-pt, pt-br, en, es, fr, de, it)
-  default: "en"
-  # Date format for the selected language
-  date_format: "%Y-%m-%d"
-  # Time format for the selected language  
-  time_format: "%H:%M"
-```
-
-#### Telegram Configuration
-
-```yaml
-telegram:
-  # Send daily summary automatically
-  send_daily_summary: true
-  # Send error notifications
-  send_error_notifications: true
-  # Send system status updates
-  send_status_updates: false
-  # Message format (html, markdown, text)
-  message_format: "html"
-```
-
-## 📱 Using with Telegram
-
-### Quick Setup
-
-1. **Create Bot**: Talk to @BotFather → `/newbot`
-2. **Get Chat ID**: Talk to @userinfobot
-3. **Configure .env**:
-   ```bash
-   TELEGRAM_ENABLED=true
-   TELEGRAM_BOT_TOKEN=your_token_here
-   TELEGRAM_CHAT_ID=your_chat_id_here
-   ```
-4. **Test**: `python main.py --run-now`
-
-### Notification Types
-
-- 📋 **Daily Summaries**: Formatted emails and meetings
-- ⚠️ **Error Notifications**: When something fails
-- 🔍 **System Status**: Connectivity checks
-- ⏰ **Scheduled Runs**: Start/finish of automated tasks
-
-### Example Telegram Message
-
-```
-🤖 Daily Summary - Agent Orchestrator
-📅 2024-01-15
-
-📧 Unread emails: 12
-📩 Recent (3h): 3
-
-📅 Meetings today: 4
-💻 Virtual: 2
-⏰ Total duration: 3.5h
-
-📋 Daily Briefing:
-[Intelligent summary generated by LLM]
-
-Generated at 09:00
-```
-
-## 🌍 Multi-language Support
-
-### Available Languages
-
-- **pt-pt**: Portuguese (Portugal) (default)
-- **pt-br**: Portuguese (Brazil)
-- **en**: English
-- **es**: Spanish
-- **fr**: French
-- **de**: German
-- **it**: Italian
-
-### How to Change Language
-
-Edit `config/config.yaml`:
-```yaml
-language:
-  default: "en"  # For English
-```
-
-Language affects:
-- Telegram messages
-- Date/time formats
-- System notifications
-- CLI interface
-
-## 💻 Usage Examples
-
-### Command Line Interface
-
-```bash
-# System status check
-python main.py --status
-
-# Immediate summary generation
-python main.py --run-now
-
-# Scheduled mode (runs daily at configured time)
-python main.py --schedule
-
-# Debug mode with verbose logging
-python main.py --run-now --debug
-
-# Use custom configuration file
-python main.py --config my-config.yaml --run-now
-```
-
-### Programmatic Usage
-
-```python
-from main import AgentOrchestrator
-
-# Initialize orchestrator
-orchestrator = AgentOrchestrator("config/config.yaml")
-
-# Check system status
-status = orchestrator.check_system_status()
-
-# Generate daily summary
-summary = orchestrator.generate_daily_summary()
-
-# Display in terminal
-orchestrator.display_summary(summary)
-```
-
-## 📊 Output Formats
-
-### JSON Format
-```json
-{
-  "timestamp": "2024-01-15T09:00:00",
-  "email_summary": "You have 12 unread emails...",
-  "calendar_summary": "You have 4 meetings today...",
-  "unified_summary": "Daily Briefing: Here's your day at a glance...",
-  "statistics": {
-    "email": {"total_unread": 12, "recent_count": 3},
-    "calendar": {"total_events": 4, "virtual_meetings": 2}
-  }
-}
-```
-
-### Text Format
-Unified summary in plain text, perfect for notifications.
-
-### HTML Format  
-Rich HTML output with styling, perfect for email reports or web dashboards.
-
-## 🏗️ Architecture
-
-```
-Agent Orchestrator
-├── main.py                    # Main orchestrator and CLI
-├── services/
-│   ├── google_auth.py         # Google OAuth 2.0 management
-│   ├── llm_service.py         # Ollama LLM client
-│   ├── telegram_service.py    # Telegram bot integration
-│   └── translations.py       # Translation service
-├── agents/
-│   ├── gmail_agent.py         # Gmail API integration
-│   └── calendar_agent.py      # Calendar API integration
-├── config/
-│   └── config.yaml           # Main configuration
-├── credentials/              # Google API credentials
-├── summaries/               # Generated summary files
-└── logs/                    # Application logs
-```
-
-### Component Details
-
-#### Gmail Agent
-- Fetches unread emails with configurable filters
-- Extracts sender, subject and content preview
-- Groups emails by sender and topic
-- Identifies urgent/important emails
-- Provides fallback summaries if LLM unavailable
-
-#### Calendar Agent  
-- Retrieves today's calendar events
-- Categorizes meetings (virtual, in-person, types)
-- Calculates duration and identifies conflicts
-- Extracts attendee and location information
-- Provides schedule optimization suggestions
-
-#### Ollama Service
-- Connects to local Ollama instance
-- Supports custom prompts and templates
-- Manages temperature and token configuration
-- Provides error handling and fallbacks
-- Optimized for gemma2:2b model
-
-#### Authentication Manager
-- Handles OAuth 2.0 flow automatically
-- Manages token refresh and storage
-- Provides connection testing utilities
-- Supports credential revocation
-
-## 🔧 Advanced Settings
-
-### Email Filtering
-```yaml
-gmail:
-  labels: ["IMPORTANT", "CATEGORY_PERSONAL"]
-  exclude_senders: ["noreply@example.com"]
-  max_age_hours: 24
-```
-
-### Calendar Customization
-```yaml
-calendar:
-  include_all_day: true
-  min_duration_minutes: 15
-  days_ahead: 1
-```
-
-### LLM Customization
-```yaml
-ollama:
-  temperature: 0.7
-  max_tokens: 1000
-  timeout: 30
-```
-
-### Scheduled Execution
-```yaml
-schedule:
-  enabled: true
-  daily_time: "08:30"
-  timezone: "America/New_York"
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**Ollama Connection Failed**
-```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/tags
-
-# Start Ollama if needed
-ollama serve
-
-# Pull model if missing
-ollama pull gemma2:2b
-```
-
-**Google Authentication Errors**
-```bash
-# Check if credentials file exists
-ls -la credentials/credentials.json
-
-# Remove cached tokens to re-authenticate
-rm credentials/token.json
-
-# Check API quotas in Google Cloud Console
-```
-
-**Telegram Issues**
-```bash
-# Check if bot token and chat ID are correct
-# Make sure you sent a message to the bot first
-# Test manual connection:
-curl -X POST "https://api.telegram.org/botYOUR_TOKEN/sendMessage" \
-     -H "Content-Type: application/json" \
-     -d '{"chat_id": "YOUR_CHAT_ID", "text": "test"}'
-```
-
-**Permission Errors**
-```bash
-# Make sure main.py is executable
-chmod +x main.py
-
-# Check directory permissions
-chmod 755 credentials/ config/ logs/
-```
-
-### Debug Mode
-
-Enable comprehensive logging:
-```bash
-python main.py --run-now --debug
-```
-
-This provides detailed information about:
-- API calls and responses
-- Authentication flow
-- LLM generation process
-- Error stack traces
-
-### System Status Check
-
-Always start troubleshooting with:
-```bash
-python main.py --status
-```
-
-This verifies:
-- ✅ Ollama availability and model access
-- ✅ Google API authentication status
-- ✅ Gmail and Calendar API connectivity
-- ✅ Telegram Bot connection
-- ✅ Configuration validity
-
-## 🔐 Security Notes
-
-- Credentials are stored locally and never transmitted
-- OAuth tokens are encrypted and auto-refreshed
-- API calls use official Google client libraries
-- LLM processing happens entirely locally (via Ollama)
-- Sensitive data is excluded from logs
-- Never commit .env files or credentials to public repositories
+The LLM handles translations automatically, but you can add language-specific instructions by editing the `_get_language_instructions()` method in `services/llm_service.py`.
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable  
-5. Update documentation
-6. Submit a pull request
+4. Test with `python test.py`
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
+## 🆘 Troubleshooting
 
-For issues and questions:
-1. Check the troubleshooting section above
-2. Review logs in `logs/orchestrator.log`
-3. Run system status check
-4. Consult `TELEGRAM_SETUP_EN.md` for Telegram configuration
-5. Create an issue with system details and logs
+### Common Issues
 
-## 📈 Roadmap
+**Inference API not working:**
+```bash
+# Check Hugging Face Hub installation
+python -c "from huggingface_hub import InferenceClient; print('✅ Hub available')"
 
-- [ ] Support for multiple calendars
-- [ ] Integration with more LLMs (OpenAI, Claude, etc.)
-- [ ] Web dashboard interface
-- [ ] Plugins for other services (Slack, Discord, etc.)
-- [ ] Email sentiment analysis
-- [ ] Intelligent response suggestions
+# Test your token
+python -c "
+import os
+from huggingface_hub import InferenceClient
+token = os.getenv('HUGGINGFACE_TOKEN')
+if not token:
+    print('❌ HUGGINGFACE_TOKEN not found in environment')
+else:
+    print(f'✅ Token found: {token[:10]}...')
+    client = InferenceClient(token=token)
+    print('✅ Client initialized successfully')
+"
 
----
+# Test API access
+python -c "
+import os
+from huggingface_hub import InferenceClient
+client = InferenceClient(token=os.getenv('HUGGINGFACE_TOKEN'))
+try:
+    response = client.text_generation('Hello', model='google/gemma-2-2b-it', max_new_tokens=10)
+    print('✅ API working:', response[:50])
+except Exception as e:
+    print('❌ API error:', str(e))
+"
+```
 
-**Agent Orchestrator** - Simplify your daily routine with artificial intelligence! 🚀
+**Rate limiting:**
+- Free accounts have limited requests per hour
+- Upgrade to Hugging Face Pro for higher limits
+- The bot implements automatic retry with exponential backoff
+
+**Google API authentication:**
+- Ensure credentials.json is in credentials/ folder
+- Check Google Cloud Console for API limits
+- Re-run authentication if tokens expire
+
+**Telegram not working:**
+- Verify bot token and chat ID in .env
+- Check if bot is added to your chat
+- Ensure bot has permission to send messages
+
+**No emails/events found:**
+- Check Google API scopes in config.yaml
+- Verify authentication with Google services
+- Check the time filters (max_age_hours)
+
+## 🌟 What's Different
+
+This bot is designed to be **conversational and intelligent** rather than just a scheduled automation tool. Key differences:
+
+- **Natural Language Processing**: Ask questions naturally in any language
+- **Context-Aware**: Understands what you're really asking for
+- **Interactive**: Real-time responses via Telegram chat
+- **Zero Setup**: No model downloads or GPU requirements - uses Hugging Face cloud inference
+- **Flexible**: Works with development testing and production deployment
+
+Perfect for busy professionals who want to interact with their email and calendar through natural conversation! 🚀

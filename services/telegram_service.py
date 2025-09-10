@@ -1,37 +1,31 @@
 """
 Telegram Service
-Handles sending messages and notifications to Telegram via bot API.
+Handles Telegram bot interactions including sending/receiving messages.
 """
 
+import os
 import asyncio
 import logging
-from typing import Optional, Dict, Any
-import telegram
-from telegram.error import TelegramError
+from typing import Optional, Dict, Any, List
 import requests
+import json
 from datetime import datetime
-
-from services.translations import TranslationService
 
 
 class TelegramService:
-    """Service for sending messages via Telegram bot"""
+    """Service for Telegram bot communication"""
     
-    def __init__(self, bot_token: str, chat_id: str, language: str = "pt-pt"):
-        self.bot_token = bot_token
-        self.chat_id = chat_id
-        self.language = language
+    def __init__(self):
+        self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        self.chat_id = os.getenv('TELEGRAM_CHAT_ID')
         self.logger = logging.getLogger(__name__)
-        self._bot = None
         
-        # Initialize translation service
-        self.translator = TranslationService(language)
+        # Base API URL
+        self.api_base = f"https://api.telegram.org/bot{self.bot_token}"
     
-    def _get_bot(self):
-        """Get Telegram bot instance"""
-        if not self._bot:
-            self._bot = telegram.Bot(token=self.bot_token)
-        return self._bot
+    def is_configured(self) -> bool:
+        """Check if Telegram is properly configured"""
+        return bool(self.bot_token and self.chat_id)
     
     def test_connection(self) -> Dict[str, Any]:
         """Test Telegram bot connection"""
@@ -42,12 +36,13 @@ class TelegramService:
             'error': None
         }
         
+        if not self.is_configured():
+            result['error'] = "Bot token or chat ID not configured"
+            return result
+        
         try:
             # Test bot token
-            bot = self._get_bot()
-            
-            # Use requests for synchronous call to avoid asyncio issues
-            response = requests.get(f"https://api.telegram.org/bot{self.bot_token}/getMe")
+            response = requests.get(f"{self.api_base}/getMe", timeout=10)
             if response.status_code == 200:
                 bot_info = response.json()['result']
                 result['bot_info'] = {
@@ -60,23 +55,14 @@ class TelegramService:
                 result['error'] = f"Invalid bot token: {response.text}"
                 return result
             
-            # Test chat access by sending a test message
-            test_response = requests.post(
-                f"https://api.telegram.org/bot{self.bot_token}/sendMessage",
-                json={
-                    'chat_id': self.chat_id,
-                    'text': f'🤖 {self.translator.get("test_connection")}',
-                    'parse_mode': 'HTML'
-                }
-            )
+            # Test chat access
+            test_message = "🤖 Bot connection test - ignore this message"
+            test_result = self.send_message(test_message)
+            result['chat_accessible'] = test_result
+            result['success'] = test_result
             
-            if test_response.status_code == 200:
-                result['chat_accessible'] = True
-                result['success'] = True
-                self.logger.info(f"Test message sent to chat {self.chat_id}")
-            else:
-                error_data = test_response.json()
-                result['error'] = f"Cannot access chat {self.chat_id}: {error_data.get('description', 'Unknown error')}"
+            if not test_result:
+                result['error'] = f"Cannot access chat {self.chat_id}"
                 
         except Exception as e:
             result['error'] = str(e)
@@ -86,15 +72,20 @@ class TelegramService:
     
     def send_message(self, message: str, parse_mode: str = 'HTML') -> bool:
         """Send a message to Telegram chat"""
+        if not self.is_configured():
+            self.logger.error("Telegram not configured")
+            return False
+            
         try:
             response = requests.post(
-                f"https://api.telegram.org/bot{self.bot_token}/sendMessage",
+                f"{self.api_base}/sendMessage",
                 json={
                     'chat_id': self.chat_id,
                     'text': message,
                     'parse_mode': parse_mode,
                     'disable_web_page_preview': True
-                }
+                },
+                timeout=30
             )
             
             if response.status_code == 200:
@@ -109,183 +100,195 @@ class TelegramService:
             self.logger.error(f"Error sending Telegram message: {e}")
             return False
     
-    def send_daily_summary(self, summary_data: Dict[str, Any]) -> bool:
-        """Send formatted daily summary to Telegram"""
+    def get_updates(self, offset: int = 0, timeout: int = 30) -> List[Dict]:
+        """Get updates from Telegram"""
+        if not self.is_configured():
+            return []
+            
         try:
-            # Create formatted message
-            message = self._format_summary_message(summary_data)
+            response = requests.get(
+                f"{self.api_base}/getUpdates",
+                params={
+                    'offset': offset,
+                    'timeout': timeout
+                },
+                timeout=timeout + 5
+            )
             
-            # Send message
-            success = self.send_message(message)
-            
-            if success:
-                self.logger.info("Daily summary sent to Telegram")
-            
-            return success
-            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('result', [])
+            else:
+                self.logger.error(f"Failed to get updates: {response.text}")
+                return []
+                
         except Exception as e:
-            self.logger.error(f"Error sending daily summary to Telegram: {e}")
+            self.logger.error(f"Error getting Telegram updates: {e}")
+            return []
+    
+    def send_typing_action(self, chat_id: str = None) -> bool:
+        """Send typing action to show bot is processing"""
+        if not self.is_configured():
+            return False
+            
+        target_chat = chat_id or self.chat_id
+        
+        try:
+            response = requests.post(
+                f"{self.api_base}/sendChatAction",
+                json={
+                    'chat_id': target_chat,
+                    'action': 'typing'
+                },
+                timeout=10
+            )
+            return response.status_code == 200
+        except Exception as e:
+            self.logger.error(f"Error sending typing action: {e}")
             return False
     
-    def _format_summary_message(self, summary_data: Dict[str, Any]) -> str:
-        """Format summary data into Telegram message"""
-        timestamp = summary_data.get('timestamp', '')
-        date = summary_data.get('date', '')
-        
-        # Parse timestamp for proper formatting
-        try:
-            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-            time_str = self.translator.format_time(dt)
-        except:
-            time_str = timestamp.split('T')[1][:5] if 'T' in timestamp else ''
-        
-        # Get statistics
-        stats = summary_data.get('statistics', {})
-        email_stats = stats.get('email', {})
-        calendar_stats = stats.get('calendar', {})
-        
-        # Format header
-        lines = [
-            f"🤖 <b>{self.translator.get('daily_summary_title')}</b>",
-            f"📅 <i>{date}</i>",
-            ""
-        ]
-        
-        # Email statistics
-        total_emails = email_stats.get('total_unread', 0)
-        recent_emails = email_stats.get('recent_count', 0)
-        
-        if total_emails > 0:
-            lines.extend([
-                f"📧 <b>{self.translator.get('unread_emails')}:</b> {total_emails}",
-                f"📩 <b>{self.translator.get('recent_emails')}:</b> {recent_emails}",
-                ""
-            ])
-        
-        # Calendar statistics  
-        total_events = calendar_stats.get('total_events', 0)
-        virtual_meetings = calendar_stats.get('virtual_meetings', 0)
-        duration_hours = round(calendar_stats.get('total_duration_minutes', 0) / 60, 1)
-        
-        if total_events > 0:
-            lines.extend([
-                f"📅 <b>{self.translator.get('meetings_today')}:</b> {total_events}",
-                f"💻 <b>{self.translator.get('virtual_meetings')}:</b> {virtual_meetings}",
-                f"⏰ <b>{self.translator.get('total_duration')}:</b> {duration_hours}{self.translator.get('hours')}",
-                ""
-            ])
-        
-        # Add unified summary (truncated for Telegram)
-        unified_summary = summary_data.get('unified_summary', '')
-        if unified_summary:
-            # Limit message length for Telegram (4096 chars max)
-            if len(unified_summary) > 2000:
-                unified_summary = unified_summary[:2000] + "..."
+    def send_response_to_chat(self, chat_id: str, message: str) -> bool:
+        """Send response to a specific chat"""
+        if not self.is_configured():
+            return False
             
-            lines.extend([
-                f"<b>{self.translator.get('unified_summary_title')}:</b>",
-                f"<pre>{unified_summary}</pre>",
-                ""
-            ])
-        
-        # Add errors if any
-        errors = summary_data.get('errors', [])
-        if errors:
-            lines.extend([
-                f"⚠️ <b>{self.translator.get('warnings')}:</b>",
-                f"<i>{'; '.join(errors[:2])}</i>",  # Limit to 2 errors
-                ""
-            ])
-        
-        # Footer
-        lines.append(f"<i>{self.translator.get('generated_at')} {time_str}</i>")
-        
-        return '\n'.join(lines)
-    
-    def send_notification(self, title: str, message: str, emoji: str = "🔔") -> bool:
-        """Send a simple notification to Telegram"""
-        formatted_message = f"{emoji} <b>{title}</b>\n\n{message}"
-        return self.send_message(formatted_message)
-    
-    def send_error_notification(self, error_message: str) -> bool:
-        """Send error notification to Telegram"""
-        message = f"❌ <b>{self.translator.get('error_notification_title')}</b>\n\n<pre>{error_message}</pre>"
-        return self.send_message(message)
-    
-    def send_status_update(self, status_data: Dict[str, Any]) -> bool:
-        """Send system status update to Telegram"""
-        lines = [
-            f"🔍 <b>{self.translator.get('system_status_title')}</b>",
-            ""
-        ]
-        
-        # Check each component
-        components = {
-            'ollama': 'Ollama LLM',
-            'gmail': 'Gmail API', 
-            'calendar': 'Calendar API',
-            'telegram': 'Telegram Bot'
-        }
-        
-        for key, name in components.items():
-            if key in status_data:
-                component_status = status_data[key]
-                is_working = (component_status.get('success', False) or 
-                             component_status.get('accessible', False) or 
-                             component_status.get('available', False) or
-                             component_status.get('authenticated', False))
-                
-                if is_working:
-                    lines.append(f"✅ <b>{name}:</b> OK")
-                else:
-                    error = component_status.get('error', 'Erro desconhecido')
-                    lines.append(f"❌ <b>{name}:</b> {error}")
-        
-        # Parse timestamp
-        timestamp = status_data.get('timestamp', '')
         try:
-            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-            time_str = self.translator.format_time(dt)
-        except:
-            time_str = timestamp
-        
-        lines.append(f"\n<i>{self.translator.get('connection_test')}: {time_str}</i>")
-        
-        message = '\n'.join(lines)
-        return self.send_message(message)
-
-
-class TelegramNotifier:
-    """Simple wrapper for common Telegram notifications"""
+            response = requests.post(
+                f"{self.api_base}/sendMessage",
+                json={
+                    'chat_id': chat_id,
+                    'text': message,
+                    'parse_mode': 'HTML',
+                    'disable_web_page_preview': True
+                },
+                timeout=30
+            )
+            
+            return response.status_code == 200
+        except Exception as e:
+            self.logger.error(f"Error sending response to chat {chat_id}: {e}")
+            return False
     
-    def __init__(self, telegram_service: TelegramService):
+    async def send_message_async(self, message: str, chat_id: str = None, parse_mode: str = 'HTML') -> bool:
+        """Async version of send_message"""
+        # For now, just call the sync version in an executor
+        # In a production app, you'd use aiohttp
+        return await asyncio.get_event_loop().run_in_executor(
+            None, 
+            self.send_response_to_chat if chat_id else self.send_message,
+            chat_id or message if chat_id else message
+        )
+    
+    def format_message_for_telegram(self, content: str, title: str = None, emoji: str = "🤖") -> str:
+        """Format message for Telegram with proper HTML"""
+        
+        # Escape HTML special characters in content
+        content = content.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        
+        # But allow basic formatting
+        content = content.replace('**', '<b>', 1).replace('**', '</b>', 1)  # Bold
+        content = content.replace('*', '<i>', 1).replace('*', '</i>', 1)    # Italic
+        
+        if title:
+            message = f"{emoji} <b>{title}</b>\n\n{content}"
+        else:
+            message = f"{emoji} {content}"
+        
+        # Ensure message isn't too long for Telegram (4096 char limit)
+        if len(message) > 4000:
+            message = message[:3900] + "\n\n<i>... (mensagem truncada)</i>"
+        
+        return message
+    
+    def send_error_notification(self, error_message: str, chat_id: str = None) -> bool:
+        """Send error notification"""
+        formatted_message = self.format_message_for_telegram(
+            error_message, 
+            "Erro", 
+            "❌"
+        )
+        
+        if chat_id:
+            return self.send_response_to_chat(chat_id, formatted_message)
+        else:
+            return self.send_message(formatted_message)
+
+
+class TelegramBotPoller:
+    """Handles Telegram bot polling and message processing"""
+    
+    def __init__(self, telegram_service: TelegramService, message_handler):
         self.telegram_service = telegram_service
+        self.message_handler = message_handler
         self.logger = logging.getLogger(__name__)
+        self.last_update_id = 0
+        self.running = False
     
-    def notify_summary_generated(self, summary_data: Dict[str, Any]) -> bool:
-        """Notify that daily summary was generated"""
-        return self.telegram_service.send_daily_summary(summary_data)
+    async def start_polling(self):
+        """Start polling for Telegram messages"""
+        if not self.telegram_service.is_configured():
+            self.logger.error("Cannot start polling: Telegram not configured")
+            return
+        
+        self.running = True
+        self.logger.info("Starting Telegram bot polling...")
+        
+        while self.running:
+            try:
+                # Get updates from Telegram
+                updates = self.telegram_service.get_updates(
+                    offset=self.last_update_id + 1,
+                    timeout=30
+                )
+                
+                for update in updates:
+                    await self._process_update(update)
+                    self.last_update_id = update['update_id']
+                
+                # Small delay to avoid overwhelming the API
+                if not updates:
+                    await asyncio.sleep(1)
+                
+            except Exception as e:
+                self.logger.error(f"Error in polling loop: {str(e)}")
+                await asyncio.sleep(5)  # Wait longer on error
     
-    def notify_system_error(self, error: str) -> bool:
-        """Notify about system errors"""
-        return self.telegram_service.send_error_notification(error)
+    async def _process_update(self, update: Dict):
+        """Process a single update from Telegram"""
+        try:
+            if 'message' in update and 'text' in update['message']:
+                message = update['message']
+                user_id = str(message['from']['id'])
+                chat_id = str(message['chat']['id'])
+                text = message['text']
+                
+                self.logger.info(f"Received message from {user_id}: {text}")
+                
+                # Send typing indicator
+                self.telegram_service.send_typing_action(chat_id)
+                
+                # Process the message
+                if self.message_handler:
+                    await self.message_handler(text, chat_id, user_id)
+        
+        except Exception as e:
+            self.logger.error(f"Error processing update: {str(e)}")
     
-    def notify_scheduled_run_started(self) -> bool:
-        """Notify that scheduled run started"""
-        return self.telegram_service.send_notification(
-            self.telegram_service.translator.get("scheduled_run_started"),
-            self.telegram_service.translator.get("scheduled_run_started_msg"),
-            "⏰"
-        )
-    
-    def notify_scheduled_run_completed(self) -> bool:
-        """Notify that scheduled run completed"""
-        return self.telegram_service.send_notification(
-            self.telegram_service.translator.get("scheduled_run_completed"),
-            self.telegram_service.translator.get("scheduled_run_completed_msg"),
-            "✅"
-        )
-    
-    def notify_system_status(self, status_data: Dict[str, Any]) -> bool:
-        """Notify about system status"""
-        return self.telegram_service.send_status_update(status_data)
+    def stop_polling(self):
+        """Stop the polling loop"""
+        self.running = False
+        self.logger.info("Stopping Telegram bot polling...")
+
+
+# Convenience functions for the new bot architecture
+def init_telegram_from_env() -> TelegramService:
+    """Initialize Telegram service from environment variables"""
+    return TelegramService()
+
+
+def send_telegram_message(message: str) -> bool:
+    """Quick function to send a message to Telegram"""
+    telegram = init_telegram_from_env()
+    if telegram.is_configured():
+        return telegram.send_message(message)
+    return False

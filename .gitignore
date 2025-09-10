@@ -117,3 +117,12 @@ config.dev.yaml
 # Telegram bot credentials (extra safety)
 telegram_bot_token.txt
 chat_id.txt
+
+# Hugging Face token (if stored locally)
+.huggingface_token
+hf_token.txt
+
+# Remove old model-related entries - using Inference API now
+# models/              # No longer needed
+# *.bin               # No longer needed
+# *.safetensors       # No longer needed
