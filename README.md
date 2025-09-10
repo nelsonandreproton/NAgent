@@ -7,12 +7,12 @@ A **minimal, intelligent** personal assistant bot that uses **Qwen2.5-7B-Instruc
 **True AI Intelligence**: The bot uses minimal code - the LLM makes **ALL decisions** about:
 - 🎯 **Tool Selection**: Understands user intent and picks the right tool
 - 🔧 **Parameter Extraction**: Automatically extracts parameters from natural language  
-- 💬 **Response Formatting**: Generates natural Portuguese responses
+- 💬 **Response Formatting**: Generates natural responses in your language
 
 ## ✨ Key Features
 
 - **🤖 LLM-Driven Intelligence**: Qwen2.5-7B-Instruct model makes all decisions
-- **🇵🇹 Portuguese Native**: Superior Portuguese understanding and responses
+- **🌍 Multi-language Support**: Intelligent language detection and natural responses
 - **📱 Telegram Integration**: Real-time chat interface 
 - **📧 Gmail Integration**: Search, list, create emails intelligently
 - **📅 Calendar Integration**: Manage events with natural language
@@ -22,7 +22,7 @@ A **minimal, intelligent** personal assistant bot that uses **Qwen2.5-7B-Instruc
 ## 🏗️ Architecture
 
 ```
-User Input (Portuguese) 
+User Input (Any Language) 
     ↓
 🧠 LLM Orchestrator (Qwen2.5-7B-Instruct)
     ↓ (Intelligent Decision Making)
@@ -83,24 +83,7 @@ GOOGLE_CREDENTIALS_PATH=credentials/credentials.json
 
 ### 5. Configure API Settings (Optional)
 
-Edit `config/config.yaml` for advanced configuration:
-
-```yaml
-llm:
-  model_name: "google/gemma-2-2b-it"
-  
-  # API settings
-  api:
-    timeout: 30
-    max_retries: 3
-    retry_delay: 1
-  
-  # Generation settings
-  generation:
-    max_new_tokens: 1024
-    temperature: 0.7
-    top_p: 0.9
-```
+See the **Configuration Options** section below for detailed settings.
 
 ### 6. Test the Bot (Recommended: Safe Startup)
 
@@ -124,37 +107,60 @@ python bot_new.py
 
 **Test with CLI commands:**
 ```bash
-# Test the orchestrator intelligence
-python test_orchestrator.py
+# Test the main CLI interface
+python test.py
 ```
 
 ## ⚙️ Configuration Options
 
-### API Configuration
+Edit `config/config.yaml` to customize the bot behavior:
 
-**Default setup (recommended):**
+### Complete Configuration Example
 ```yaml
+# Bot Mode Configuration
+bot:
+  mode: "telegram"          # telegram or cli
+  auto_daily_summary: false
+
+# Hugging Face LLM Configuration
 llm:
-  model_name: "google/gemma-2-2b-it"
+  model_name: "Qwen/Qwen2.5-7B-Instruct"
+  
+  # API settings
   api:
-    timeout: 30
-    max_retries: 3
+    timeout: 30             # Default: 30s
+    max_retries: 3          # Default: 3 retries
+    retry_delay: 1          # Default: 1s delay
+  
+  # Generation settings
+  generation:
+    max_new_tokens: 1024    # Default: 1024 tokens
+    temperature: 0.7        # Default: 0.7 (creative)
+    top_p: 0.9             # Default: 0.9
+
+# Agent Configuration
+agents:
+  gmail:
+    max_results: 20         # Max emails to fetch
+    max_age_hours: 24       # Only recent emails
+  calendar:
+    max_results: 20         # Max events to fetch
 ```
 
-**High-throughput setup:**
+### Performance Tuning
+
+**High-throughput setup (more reliable):**
 ```yaml
 llm:
-  model_name: "google/gemma-2-2b-it"
   api:
     timeout: 60      # Longer timeout for complex requests
     max_retries: 5   # More retries for reliability
     retry_delay: 2   # Longer delay between retries
 ```
 
-**Fast response setup:**
+**Fast response setup (quicker responses):**
 ```yaml
 llm:
-  model_name: "google/gemma-2-2b-it"
   api:
     timeout: 15      # Shorter timeout for quick responses
     max_retries: 1   # Fewer retries for speed
@@ -189,46 +195,24 @@ The bot automatically detects and responds in your language:
 - "¿Tengo reuniones hoy?" (Spanish)  
 - "Ai-je des réunions aujourd'hui ?" (French)
 
-## 🔧 Configuration
-
-Edit `config/config.yaml` to customize:
-
-```yaml
-# NAgent Bot Configuration
-bot:
-  mode: "telegram"          # telegram or cli
-  auto_daily_summary: false
-
-# Hugging Face LLM Configuration
-llm:
-  model_name: "google/gemma-2-2b-it"
-  device: "auto"           # auto, cpu, cuda, mps
-  cache_dir: "models/"
-  
-# Agent Configuration
-agents:
-  gmail:
-    max_results: 20
-    max_age_hours: 24
-  calendar:
-    max_results: 20
-```
 
 ## 📁 Project Structure
 
 ```
 NAgent/
-├── bot.py                 # Main bot orchestrator
+├── bot_new.py            # Main bot orchestrator
+├── start_bot.py          # Bot startup script
 ├── test.py               # CLI testing interface
 ├── config/
 │   ├── config.yaml       # Configuration file
-│   └── settings.py       # Settings loader
+│   └── __init__.py       # Simple config loader
 ├── services/
 │   ├── llm_service.py    # Hugging Face Inference API integration & request routing
 │   └── telegram_service.py # Telegram bot integration
 ├── agents/
 │   ├── gmail_agent.py    # Gmail API integration
 │   └── calendar_agent.py # Calendar API integration
+├── tools/                # Additional utility tools
 └── credentials/          # Google API credentials
 ```
 
@@ -266,8 +250,8 @@ NAgent/
 ```bash
 # Test LLM routing
 python -c "
-from services.llm_service import OllamaService
-llm = OllamaService()
+from services.llm_service import LLMService
+llm = LLMService()
 response = llm.route_user_request('do I have emails?')
 print(response.content)
 "

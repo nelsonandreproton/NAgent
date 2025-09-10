@@ -4,10 +4,6 @@
 bot:
   # Primary mode: telegram or cli
   mode: "telegram"
-  # Enable automatic daily summaries
-  auto_daily_summary: false
-  # Daily summary time (if enabled)
-  daily_time: "09:00"
 
 # Hugging Face Inference API Configuration
 llm:
@@ -20,15 +16,10 @@ llm:
     max_retries: 3  # Number of retries on failure
     retry_delay: 1  # Delay between retries in seconds
     
-  # Generation parameters
+  # Generation parameters (handled by Inference API)
   generation:
     max_new_tokens: 1024
     temperature: 0.7
-    top_p: 0.9
-    top_k: 50
-    repetition_penalty: 1.1
-    do_sample: true
-    # Note: Inference API handles these parameters automatically
 
 # Google API Configuration
 google_api:
@@ -56,6 +47,6 @@ response:
 
 # Logging Configuration
 logging:
-  level: "INFO"
+  level: "ERROR"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  file: "logs/orchestrator.log"
+  file: "logs/bot.log"

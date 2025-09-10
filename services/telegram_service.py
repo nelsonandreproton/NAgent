@@ -159,7 +159,12 @@ class TelegramService:
                 timeout=30
             )
             
-            return response.status_code == 200
+            if response.status_code == 200:
+                return True
+            else:
+                error_data = response.json() if response.content else {'description': 'No response content'}
+                self.logger.error(f"Telegram API error (status {response.status_code}): {error_data.get('description')}")
+                return False
         except Exception as e:
             self.logger.error(f"Error sending response to chat {chat_id}: {e}")
             return False
@@ -174,7 +179,10 @@ class TelegramService:
                     None, 
                     lambda: self.send_response_to_chat(chat_id, message)
                 )
-                self.logger.info(f"Async send to {chat_id} result: {result}")
+                if result:
+                    self.logger.info(f"Async send to {chat_id} result: Success")
+                else:
+                    self.logger.error(f"Async send to {chat_id} result: Failed - check previous error messages")
                 return result
             else:
                 result = await asyncio.get_event_loop().run_in_executor(

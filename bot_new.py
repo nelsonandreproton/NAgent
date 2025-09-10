@@ -15,7 +15,7 @@ load_dotenv()
 from services.llm_service import HuggingFaceInferenceService
 from services.llm_orchestrator import LLMOrchestrator
 from services.telegram_service import TelegramService, TelegramBotPoller
-from config.settings import load_config
+from config import load_config
 
 
 @dataclass
@@ -33,15 +33,26 @@ class NAgentBot:
         self.config = load_config()
         self.logger = logging.getLogger(__name__)
         
-        # Setup logging
+        # Setup logging (only errors to console, full log to file)
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.ERROR,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             handlers=[
                 logging.StreamHandler(),
-                logging.FileHandler('logs/bot.log') if not os.path.exists('logs') or os.makedirs('logs', exist_ok=True) else logging.FileHandler('logs/bot.log')
             ]
         )
+        
+        # Add file handler for error logging only
+        if not os.path.exists('logs'):
+            os.makedirs('logs', exist_ok=True)
+        
+        file_handler = logging.FileHandler('logs/bot.log')
+        file_handler.setLevel(logging.ERROR)
+        file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(file_formatter)
+        
+        # Add file handler to root logger
+        logging.getLogger().addHandler(file_handler)
         
         # Initialize LLM service
         self.llm = HuggingFaceInferenceService(self.config.get('llm', {}))
@@ -143,8 +154,9 @@ class NAgentBot:
                     response = await self.process_request(text, "pt")
                     
                     # Send response back
-                    self.logger.info(f"Sending response to chat {chat_id}: {len(response.content)} characters")
-                    send_success = await self.telegram.send_message_async(response.content, chat_id)
+                    formatted_message = self.telegram.format_message_for_telegram(response.content)
+                    self.logger.info(f"Sending response to chat {chat_id}: {len(formatted_message)} characters")
+                    send_success = await self.telegram.send_message_async(formatted_message, chat_id)
                     self.logger.info(f"Message send result: {send_success}")
                     
                 except Exception as e:
