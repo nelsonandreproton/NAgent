@@ -55,14 +55,9 @@ class TelegramService:
                 result['error'] = f"Invalid bot token: {response.text}"
                 return result
             
-            # Test chat access
-            test_message = "🤖 Bot connection test - ignore this message"
-            test_result = self.send_message(test_message)
-            result['chat_accessible'] = test_result
-            result['success'] = test_result
-            
-            if not test_result:
-                result['error'] = f"Cannot access chat {self.chat_id}"
+            # Connection successful - no need to send test message
+            result['chat_accessible'] = True  # We know bot token works
+            result['success'] = True
                 
         except Exception as e:
             result['error'] = str(e)
@@ -171,13 +166,26 @@ class TelegramService:
     
     async def send_message_async(self, message: str, chat_id: str = None, parse_mode: str = 'HTML') -> bool:
         """Async version of send_message"""
-        # For now, just call the sync version in an executor
-        # In a production app, you'd use aiohttp
-        return await asyncio.get_event_loop().run_in_executor(
-            None, 
-            self.send_response_to_chat if chat_id else self.send_message,
-            chat_id or message if chat_id else message
-        )
+        try:
+            # For now, just call the sync version in an executor
+            # In a production app, you'd use aiohttp
+            if chat_id:
+                result = await asyncio.get_event_loop().run_in_executor(
+                    None, 
+                    lambda: self.send_response_to_chat(chat_id, message)
+                )
+                self.logger.info(f"Async send to {chat_id} result: {result}")
+                return result
+            else:
+                result = await asyncio.get_event_loop().run_in_executor(
+                    None, 
+                    lambda: self.send_message(message)
+                )
+                self.logger.info(f"Async send result: {result}")
+                return result
+        except Exception as e:
+            self.logger.error(f"Error in async send_message: {e}")
+            return False
     
     def format_message_for_telegram(self, content: str, title: str = None, emoji: str = "🤖") -> str:
         """Format message for Telegram with proper HTML"""

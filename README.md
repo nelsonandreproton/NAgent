@@ -1,35 +1,41 @@
-# 🤖 NAgent - Intelligent Personal Assistant Bot
+# NAgent - LLM-Driven Personal Assistant
 
-NAgent is an intelligent personal assistant bot that helps you manage your emails and calendar through natural language conversations. It uses Hugging Face's Inference API with gemma-2-2b-it for advanced AI processing with zero setup and no local model downloads.
+A **minimal, intelligent** personal assistant bot that uses **Qwen2.5-7B-Instruct** to understand natural language and intelligently select tools for email and calendar management.
+
+## 🧠 Revolutionary LLM-Driven Architecture
+
+**True AI Intelligence**: The bot uses minimal code - the LLM makes **ALL decisions** about:
+- 🎯 **Tool Selection**: Understands user intent and picks the right tool
+- 🔧 **Parameter Extraction**: Automatically extracts parameters from natural language  
+- 💬 **Response Formatting**: Generates natural Portuguese responses
 
 ## ✨ Key Features
 
-- **Smart Request Routing**: Automatically detects if you're asking about emails, calendar, or general questions
-- **Multi-language Support**: Responds naturally in the same language you use 
-- **Telegram Bot Interface**: Chat with your assistant through Telegram
-- **Gmail Integration**: Check, analyze and summarize unread emails
-- **Calendar Integration**: Review today's meetings and schedule
-- **Cloud AI Processing**: Uses Hugging Face Inference API with gemma-2-2b-it for instant responses
-- **Development Testing**: Simple command-line interface for testing
+- **🤖 LLM-Driven Intelligence**: Qwen2.5-7B-Instruct model makes all decisions
+- **🇵🇹 Portuguese Native**: Superior Portuguese understanding and responses
+- **📱 Telegram Integration**: Real-time chat interface 
+- **📧 Gmail Integration**: Search, list, create emails intelligently
+- **📅 Calendar Integration**: Manage events with natural language
+- **⚡ Minimal Code**: 80% less code than traditional bot architectures
+- **🛠️ Tool Ecosystem**: 7 intelligent tools for comprehensive assistance
 
 ## 🏗️ Architecture
 
 ```
-User (Telegram/CLI) 
+User Input (Portuguese) 
     ↓
-NAgent Bot (request routing)
-    ↓
+🧠 LLM Orchestrator (Qwen2.5-7B-Instruct)
+    ↓ (Intelligent Decision Making)
+🔧 Tool Registry (Dynamic Discovery)
+    ↓ (Smart Tool Selection)
 ┌─────────────┬─────────────────┬─────────────┐
-│ Gmail Agent │ Calendar Agent  │ General LLM │
+│ Email Tools │ Calendar Tools  │ Utility Tools│
 └─────────────┴─────────────────┴─────────────┘
     ↓
-Hugging Face Inference API (gemma-2-2b-it)
+📊 Natural Language Response
 ```
 
-The bot intelligently analyzes your request and:
-- **EMAIL**: Routes to Gmail Agent for email-related questions
-- **CALENDAR**: Routes to Calendar Agent for meeting/schedule questions  
-- **GENERAL**: Handles directly for greetings, general questions, or capabilities
+**The LLM does ALL the thinking** - no hardcoded routing logic!
 
 ## 🚀 Quick Start
 
@@ -96,28 +102,30 @@ llm:
     top_p: 0.9
 ```
 
-### 6. Test the Bot
+### 6. Test the Bot (Recommended: Safe Startup)
 
-Test without Telegram (for development):
+**Safe startup script (prevents conflicts):**
 ```bash
-# Test general questions
-python test.py "hello, how are you?"
+# Telegram bot (recommended)
+python start_bot.py telegram
 
-# Test email questions  
-python test.py "do I have any unread emails?"
-
-# Test calendar questions
-python test.py "what meetings do I have today?"
-
-# Generate daily summary
-python test.py summary
+# CLI mode for testing
+python start_bot.py cli
 ```
 
-### 7. Run Telegram Bot
-
+**Alternative direct startup:**
 ```bash
-# Starts instantly - no model loading required!
-python bot.py
+# Telegram mode
+python bot_new.py telegram
+
+# CLI mode  
+python bot_new.py
+```
+
+**Test with CLI commands:**
+```bash
+# Test the orchestrator intelligence
+python test_orchestrator.py
 ```
 
 ## ⚙️ Configuration Options

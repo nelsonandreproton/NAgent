@@ -12,7 +12,7 @@ bot:
 # Hugging Face Inference API Configuration
 llm:
   # Model settings
-  model_name: "google/gemma-2-2b-it"  # Instruction-tuned version
+  model_name: "Qwen/Qwen2.5-7B-Instruct"  # Advanced model with excellent tool-calling capabilities
   
   # Inference API settings
   api:
@@ -35,7 +35,9 @@ google_api:
   credentials_path: "credentials/credentials.json"
   scopes:
     - "https://www.googleapis.com/auth/gmail.readonly"
-    - "https://www.googleapis.com/auth/calendar.readonly"
+    - "https://www.googleapis.com/auth/gmail.send"
+    - "https://www.googleapis.com/auth/calendar.readonly"  
+    - "https://www.googleapis.com/auth/calendar"
 
 # Agent Configuration
 agents:
