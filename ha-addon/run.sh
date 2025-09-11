@@ -33,8 +33,24 @@ if [ -z "$GOOGLE_CREDENTIALS_BASE64" ]; then
 fi
 
 # Setup Google credentials
+mkdir -p /tmp/credentials
 echo "$GOOGLE_CREDENTIALS_BASE64" | base64 -d > /tmp/credentials/credentials.json
 export GOOGLE_CREDENTIALS_PATH="/tmp/credentials/credentials.json"
+
+# Verify credentials file was created and show details for debugging
+if [ -f "/tmp/credentials/credentials.json" ]; then
+    bashio::log.info "Credentials file created successfully"
+    FILE_SIZE=$(wc -c < /tmp/credentials/credentials.json)
+    bashio::log.info "Credentials file size: ${FILE_SIZE} bytes"
+    
+    # Show first few characters to verify content
+    head -c 100 /tmp/credentials/credentials.json > /tmp/cred_preview.txt
+    PREVIEW=$(cat /tmp/cred_preview.txt)
+    bashio::log.info "Credentials file preview: ${PREVIEW}..."
+    rm -f /tmp/cred_preview.txt
+else
+    bashio::log.error "Failed to create credentials file!"
+fi
 
 bashio::log.info "Configuration loaded successfully"
 bashio::log.info "Starting NAgent Bot with Telegram integration..."

@@ -1,6 +1,6 @@
 """
 Google API Authentication Manager
-Handles OAuth 2.0 flow and credential management for Gmail and Calendar APIs.
+Handles OAuth 2.0 flow and Service Account authentication for Gmail and Calendar APIs.
 """
 
 import os
@@ -9,6 +9,7 @@ import logging
 from typing import Optional, List
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -25,17 +26,31 @@ class GoogleAuthManager:
         self._credentials: Optional[Credentials] = None
     
     def authenticate(self) -> bool:
-        """Authenticate with Google APIs using OAuth 2.0"""
+        """Authenticate with Google APIs using OAuth 2.0 or Service Account"""
         
-        # Check if we have existing valid credentials
+        self.logger.info(f"Starting authentication with credentials path: {self.credentials_path}")
+        
+        # Check if this is a service account credential file
+        if self._is_service_account_file():
+            try:
+                self._credentials = ServiceAccountCredentials.from_service_account_file(
+                    self.credentials_path, scopes=self.scopes
+                )
+                self.logger.info("Loaded service account credentials")
+                return True
+            except Exception as e:
+                self.logger.error(f"Failed to load service account credentials: {e}")
+                return False
+        
+        # Check if we have existing valid OAuth credentials
         if os.path.exists(self.token_path):
             try:
                 self._credentials = Credentials.from_authorized_user_file(
                     self.token_path, self.scopes
                 )
-                self.logger.info("Loaded existing credentials")
+                self.logger.info("Loaded existing OAuth credentials")
             except Exception as e:
-                self.logger.warning(f"Failed to load existing credentials: {e}")
+                self.logger.warning(f"Failed to load existing OAuth credentials: {e}")
         
         # If credentials are not valid or don't exist, get new ones
         if not self._credentials or not self._credentials.valid:
@@ -72,6 +87,29 @@ class GoogleAuthManager:
             self.logger.warning(f"Failed to save credentials: {e}")
         
         return True
+    
+    def _is_service_account_file(self) -> bool:
+        """Check if the credentials file is a service account file"""
+        self.logger.info(f"Checking if file is service account: {self.credentials_path}")
+        
+        if not os.path.exists(self.credentials_path):
+            self.logger.error(f"Credentials file does not exist: {self.credentials_path}")
+            return False
+        
+        try:
+            with open(self.credentials_path, 'r') as f:
+                data = json.load(f)
+            is_service_account = data.get('type') == 'service_account'
+            self.logger.info(f"Credentials file content - type: {data.get('type', 'unknown')}, is_service_account: {is_service_account}")
+            
+            # Also log the project_id to verify we're reading the right file
+            if 'project_id' in data:
+                self.logger.info(f"Service account project_id: {data['project_id']}")
+            
+            return is_service_account
+        except Exception as e:
+            self.logger.error(f"Failed to read credentials file {self.credentials_path}: {e}")
+            return False
     
     def get_gmail_service(self):
         """Get authenticated Gmail service"""

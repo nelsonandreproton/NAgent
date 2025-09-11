@@ -23,6 +23,5 @@ schema:
   huggingface_token: str
   google_credentials_base64: str
   log_level: list(DEBUG|INFO|WARNING|ERROR)?
-image: "nagent-bot"
 hassio_api: true
 hassio_role: default
