@@ -1,0 +1,52 @@
+# NAgent Bot Configuration
+
+# Bot Mode Configuration
+bot:
+  # Primary mode: telegram or cli
+  mode: "telegram"
+
+# Hugging Face Inference API Configuration
+llm:
+  # Model settings
+  model_name: "Qwen/Qwen2.5-7B-Instruct"  # Advanced model with excellent tool-calling capabilities
+  
+  # Inference API settings
+  api:
+    timeout: 30  # API request timeout in seconds
+    max_retries: 3  # Number of retries on failure
+    retry_delay: 1  # Delay between retries in seconds
+    
+  # Generation parameters (handled by Inference API)
+  generation:
+    max_new_tokens: 1024
+    temperature: 0.7
+
+# Google API Configuration
+google_api:
+  credentials_path: "credentials/credentials.json"
+  scopes:
+    - "https://www.googleapis.com/auth/gmail.readonly"
+    - "https://www.googleapis.com/auth/gmail.send"
+    - "https://www.googleapis.com/auth/calendar.readonly"  
+    - "https://www.googleapis.com/auth/calendar"
+
+# Agent Configuration
+agents:
+  gmail:
+    max_results: 20
+    max_age_hours: 24
+  calendar:
+    max_results: 20
+    
+# Response Configuration
+response:
+  # Max message length for Telegram (characters)
+  max_message_length: 4000
+  # Truncate long responses
+  truncate_long_responses: true
+
+# Logging Configuration
+logging:
+  level: "ERROR"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/bot.log"

@@ -48,6 +48,8 @@ credentials/
 token.json
 *.json
 !config.yaml
+!package.json
+!requirements.txt
 
 # Logs
 *.log
@@ -61,6 +63,7 @@ summaries/
 !README*.md
 !*.template
 !TELEGRAM_SETUP_*.md
+!DEPLOYMENT.md
 
 # Cache files
 .cache/
@@ -83,8 +86,6 @@ ehthumbs.db
 .coverage
 htmlcov/
 .tox/
-test_*.py
-*_test.py
 
 # Database
 *.db
@@ -105,10 +106,9 @@ Pipfile.lock
 # Node modules (if any)
 node_modules/
 
-# Docker
-.dockerignore
-Dockerfile*
-docker-compose*.yml
+# Deployment files
+deploy/
+.env.production
 
 # Local configuration overrides
 config.local.yaml
@@ -122,7 +122,5 @@ chat_id.txt
 .huggingface_token
 hf_token.txt
 
-# Remove old model-related entries - using Inference API now
-# models/              # No longer needed
-# *.bin               # No longer needed
-# *.safetensors       # No longer needed
+# Home Assistant addon generated files
+nagent-ha-addon.zip
